@@ -11,6 +11,10 @@ if you want to help and give advice, they are more than welcome
 Since it was one on my first difficulty on this project, let's explain 
 how the authentication works in a few words.
 
+Please note that this workflow is far from perfect and will need some
+adjustement  (like sending/reading the refresh token as a HttpOnly 
+cookie)
+
 ### API side
 
 The API provide an unauthenticated endpoint to allow user to identify
