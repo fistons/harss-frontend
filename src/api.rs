@@ -2,7 +2,7 @@ use gloo_net::http::{Method, Request, Response};
 use leptos::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-
+use thiserror::Error;
 use crate::{ApiList, Item};
 
 // FIXME: should send a Result, because, you know, sometimes people makes mistake when typing their
@@ -34,23 +34,22 @@ impl AuthenticatedClient {
 
 
     // FIXME: pls Result
-    pub async fn fetch_items(&self, page: u32, size: u32) -> ApiList<Item> {
+    pub async fn fetch_items(&self, page: u32, size: u32) -> Result<ApiList<Item>> {
         //Delegate the call to the internal send method
-        let response = self.send(Method::GET, &format!("{}/items?page={}&size={}", &self.host, page, size)).await;
-        response
+        let response = self.send(Method::GET, &format!("{}/items?page={}&size={}", &self.host, page, size)).await?;
+        Ok(response
             .json::<ApiList<Item>>()
-            .await
-            .unwrap()
+            .await?)
     }
 
     /// Our call wrapper. If a 401 happens during the call, call the refresh method to obtain a
     /// newer access_token, and try the call again
     /// FIXME: PLS. USE. RESULT.
-    async fn send(&self, method: Method, path: &str) -> Response {
+    async fn send(&self, method: Method, path: &str) -> Result<Response> {
         if let Some(tokens) = self.tokens.get() {
             let response = Request::new(path).method(method)
                 .header("Authorization", &format!("Bearer {}", tokens.access_token))
-                .send().await.unwrap();
+                .send().await?;
 
             // Token is probably expired, time to get a new token
             if response.status() == 401 {
@@ -63,12 +62,12 @@ impl AuthenticatedClient {
                     *x = Some(new_token);
                 });
 
-                return Request::new(path).method(method)
+                return Ok(Request::new(path).method(method)
                     .header("Authorization", &format!("Bearer {}", self.tokens.get().unwrap().access_token))
-                    .send().await.unwrap();
+                    .send().await?);
             }
 
-            response
+            Ok(response)
         } else {
             // FIXME: NO. NOT PANIC. RESULT
             panic!("no tokens");
@@ -86,6 +85,14 @@ impl AuthenticatedClient {
             .await
             .unwrap()
     }
+}
+
+type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error(transparent)]
+    Fetch(#[from] gloo_net::Error)
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
