@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 dotenvy_macro = "0.15.7"
-leptos = {version="0.2.5"}
-leptos_router = {version="0.2.5", features=["csr"]}
+leptos = {version="0.3"}
+leptos_router = {version="0.3", features=["csr"]}
 console_log = "1.0.0"
 log = "0.4"
 console_error_panic_hook = "0.1.7"
@@ -14,12 +14,10 @@ serde = {version = "1", features=["derive"]}
 serde_json = "1"
 gloo-storage = "0.2"
 gloo-net = "0.2"
-
+thiserror = "1.0.40"
 
 [profile.release]
 opt-level = 'z'
 lto = true
 codegen-units = 1
-
-
 
