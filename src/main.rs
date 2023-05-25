@@ -67,7 +67,7 @@ pub fn ArticleList(cx: Scope) -> impl IntoView {
     // Out HTTP client
     let client = use_context::<ReadSignal<AuthenticatedClient>>(cx).unwrap();
 
-    let res = create_resource(cx, page_size, move |(page, size)| async move {
+    let res = create_local_resource(cx, page_size, move |(page, size)| async move {
         // FIXME:  this should return and result and be handled
         client().fetch_items(page, size).await
     });
@@ -79,14 +79,10 @@ pub fn ArticleList(cx: Scope) -> impl IntoView {
                 res.read(cx)
                     .map(|b| view! { cx,
 
-           {move || if res.loading().get() {
-                view!{cx,
-                    <p>"Loading..."</p>
-                }
-            } else {
-              view! {cx,
-                    <p>"Page " {b.page} "/" {b.total_pages}</p>
-            }}}
+            <ErrorBoundary fallback=|cx, error| view! {cx, <div>"Nope"</div>}>
+
+
+                <p>"Page " {b.page} "/" {b.total_pages}</p>
 
                 <span>
                     {move || if b.page > 1 {
@@ -137,6 +133,7 @@ pub fn ArticleList(cx: Scope) -> impl IntoView {
                         }
                     }
                  />
+                </ErrorBoundary>
                 })
             }}
             </Transition>
