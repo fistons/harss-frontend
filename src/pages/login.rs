@@ -1,12 +1,12 @@
 use leptos::*;
 
-use crate::api::{Tokens, login_attempt};
+use crate::api::{login_attempt, Tokens};
 use crate::credentials::*;
 
 #[component]
 pub fn Login<F>(cx: Scope, on_success: F) -> impl IntoView
-    where
-        F: Fn(Tokens) + 'static + Clone,
+where
+    F: Fn(Tokens) + 'static + Clone,
 {
     let (message, set_message) = create_signal(cx, "Welcome");
 
@@ -17,7 +17,6 @@ pub fn Login<F>(cx: Scope, on_success: F) -> impl IntoView
             let password = password.to_string();
             let on_success = on_success.clone();
             async move {
-     
                 let result = login_attempt(&email, &password).await;
                 set_message("You are logged");
                 on_success(result);

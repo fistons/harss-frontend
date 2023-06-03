@@ -4,8 +4,8 @@ use leptos_router::*;
 use serde::{Deserialize, Serialize};
 
 use components::*;
-use pages::login::*;
 use pages::articleList::*;
+use pages::login::*;
 
 use crate::api::{AuthenticatedClient, Tokens};
 
@@ -31,7 +31,7 @@ pub struct Item {
     title: String,
     url: String,
     content: String,
-    channel_name: String
+    channel_name: String,
 }
 
 /// Query parameters of the articles page
@@ -50,13 +50,12 @@ pub fn Article(cx: Scope, article: Item) -> impl IntoView {
     }
 }
 
-
 /// Main component of the application, where the magic happens
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     // Build our tokens signal
     let tokens = create_rw_signal(cx, None::<Tokens>);
-    
+
     // Build our client, note the tokens rw signal given in the constructor
     let (client, _) = create_signal(cx, AuthenticatedClient::new(tokens));
 
@@ -85,7 +84,6 @@ pub fn App(cx: Scope) -> impl IntoView {
     let on_logout = move || {
         logout.dispatch(());
     };
-
 
     // Check the tokens state and update the local storage in consequence
     create_effect(cx, move |_| {

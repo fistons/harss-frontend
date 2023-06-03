@@ -12,19 +12,19 @@ Since it was one on my first difficulty on this project, let's explain
 how the authentication works in a few words.
 
 Please note that this workflow is far from perfect and will need some
-adjustement  (like sending/reading the refresh token as a HttpOnly 
+adjustment  (like sending/reading the refresh token as a HttpOnly 
 cookie)
 
 ### API side
 
 The API provide an unauthenticated endpoint to allow user to identify
 themself with their user and password.
-In case of successfull authenticated, the API returns in the response
+In case of successfully authenticated, the API returns in the response
 two tokens:
  * One access JSON web token (aka JWT). It has a short TTL (15 minutes)
  * One refresh token with a long TTL
 
-The API provide a second endpoint that expect the regresh token and return
+The API provide a second endpoint that expect the refresh token and return
 a new access token.
 
 ### Client side
