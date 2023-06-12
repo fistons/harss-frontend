@@ -46,7 +46,7 @@ impl AuthenticatedClient {
                 &format!("{}/items?page={}&size={}", &self.host, page, size),
             )
             .await?;
-        Ok(response.json::<ApiList<Item>>().await.map_err(|_| ()))?
+        Ok(response.json::<ApiList<Item>>().await.map_err(|_| FetchError::Json))?
     }
 
     /// Our call wrapper. If a 401 happens during the call, call the refresh method to obtain a
@@ -59,7 +59,7 @@ impl AuthenticatedClient {
                 .header("Authorization", &format!("Bearer {}", tokens.access_token))
                 .send()
                 .await
-                .map_err(|_| ())?;
+                .map_err(|_| FetchError::Request)?;
 
             // Token is probably expired, time to get a new token
             if response.status() == 401 {
@@ -83,7 +83,7 @@ impl AuthenticatedClient {
                     )
                     .send()
                     .await
-                    .map_err(|_| ()))?;
+                    .map_err(|_| FetchError::Request))?;
             }
 
             Ok(response)
@@ -107,12 +107,14 @@ impl AuthenticatedClient {
     }
 }
 
-type Result<T> = std::result::Result<T, ()>;
+type Result<T> = std::result::Result<T, FetchError>;
 
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("Nope")]
-    Fetch(#[from] gloo_net::Error),
+#[derive(Error, Clone, Debug)]
+pub enum FetchError {
+    #[error("Error loading data from serving.")]
+    Request,
+    #[error("Error deserializaing cat data from request.")]
+    Json,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

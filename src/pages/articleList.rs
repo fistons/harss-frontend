@@ -2,7 +2,7 @@ use leptos::*;
 use leptos_router::*;
 
 use crate::{Article, ArticleParams};
-use crate::api::{AuthenticatedClient, Tokens};
+use crate::api::AuthenticatedClient;
 use crate::Item;
 
 /// The articles list page.
@@ -18,16 +18,14 @@ pub fn ArticleList(cx: Scope) -> impl IntoView {
 
     let page_size = Signal::derive(cx, move || (page(), size()));
 
-    // Our optional `tokens`, used in the `<Show>` tag, and implicitly in our HTTP client
-    let tokens = use_context::<RwSignal<Option<Tokens>>>(cx).unwrap();
     // Out HTTP client
     let client = use_context::<ReadSignal<AuthenticatedClient>>(cx).unwrap();
 
-    let res = create_resource(cx, page_size, move |(page, size)| async move {
+    let res = create_local_resource(cx, page_size, move |(page, size)| async move {
         client().fetch_items(page, size).await
     });
 
-    let fallback = move |cx, error: RwSignal<Errors>| {
+    let fallback = move |cx, _: RwSignal<Errors>| {
         view! {cx, <p>"This is sad"</p>}
     };
 
@@ -54,8 +52,8 @@ pub fn ArticleList(cx: Scope) -> impl IntoView {
     };
 
     view! { cx,
-        <ErrorBoundary fallback=move |cx, errors| view!{cx, <p>"no"</p>}>
-            <Transition fallback=move || view!{cx, <p>"no"</p>}>
+        <ErrorBoundary fallback>
+            <Transition fallback=suspense_fallback>
                  {article_view}
             </Transition>
         </ErrorBoundary>
