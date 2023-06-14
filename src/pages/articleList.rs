@@ -1,9 +1,31 @@
 use leptos::*;
 use leptos_router::*;
 
-use crate::{Article, ArticleParams};
+use crate::{Article, ArticleParams, ApiList};
+use crate::components::*;
 use crate::api::AuthenticatedClient;
 use crate::Item;
+
+
+#[component]
+fn ListView(cx: Scope, b: ApiList<Item>) -> impl IntoView {
+
+                view! {cx,
+
+                <Pager current_page={(|| b.page)()} total_page={(|| b.total_pages)()}/>
+
+                <For
+                    each=move || b.content.clone()
+                    key=|story| story.id
+                    view=move |cx, article: Item| {
+                        view! { cx,
+                            <Article article/>
+                        }
+                    }
+                />
+                }
+
+}
 
 /// The articles list page.
 #[component]
@@ -25,7 +47,7 @@ pub fn ArticleList(cx: Scope) -> impl IntoView {
         client().fetch_items(page, size).await
     });
 
-    let fallback = move |cx, _: RwSignal<Errors>| {
+    let fallback_error = move |cx, _: RwSignal<Errors>| {
         view! {cx, <p>"This is sad"</p>}
     };
 
@@ -36,23 +58,15 @@ pub fn ArticleList(cx: Scope) -> impl IntoView {
     let article_view = move || {
         res.read(cx).map(|data| {
             data.map(|b| {
-                view! {cx,
-                <For
-                    each=move || b.content.clone()
-                    key=|story| story.id
-                    view=move |cx, article: Item| {
-                        view! { cx,
-                            <Article article/>
-                        }
-                    }
-                />
+                view!{cx, 
+                    <ListView b={b}/>
                 }
             })
         })
     };
 
     view! { cx,
-        <ErrorBoundary fallback>
+        <ErrorBoundary fallback=fallback_error>
             <Transition fallback=suspense_fallback>
                  {article_view}
             </Transition>
